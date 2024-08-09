@@ -12,6 +12,8 @@ import {
 import axios from 'axios';
 import Link from 'next/link';
 
+const api = process.env.API_URL;
+
 ChartJS.register(
   BarElement,
   CategoryScale,
@@ -31,7 +33,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:4000/api/events${range ? `?range=${range}` : ''}`);
+        const response = await axios.get(`${api}/${range ? `?range=${range}` : ''}`);
         const processedViewData = processViewData(response.data);
         const processedLocationData = processLocationData(response.data);
         const processedTypeData = processTypeData(response.data);
