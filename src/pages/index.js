@@ -1,11 +1,17 @@
 import { useRouter } from 'next/router';
+import { useSession, signIn } from 'next-auth/react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend } from 'chart.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend);
 
 export default function Home() {
   const router = useRouter();
+  const { data: session, status } = useSession();
+  const loading = status === 'loading';
 
   const chartData = {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -49,12 +55,23 @@ export default function Home() {
         </div>
 
         <div className="text-center mb-6">
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition"
-          >
-            Go to Dashboard
-          </button>
+          {loading ? (
+            <p>Loading...</p>
+          ) : session ? (
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition"
+            >
+              Go to Dashboard
+            </button>
+          ) : (
+            <button
+              onClick={() => signIn('discord')}
+              className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
+            >
+              Login with Discord
+            </button>
+          )}
         </div>
 
         <div className="text-center mb-6">
