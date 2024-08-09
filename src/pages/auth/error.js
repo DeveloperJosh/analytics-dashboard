@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 export default function ErrorPage() {
@@ -8,7 +9,7 @@ export default function ErrorPage() {
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <h1>Sign In Error</h1>
       {error === 'AccessDenied' && <p>You do not have permission to access this dashboard.</p>}
-      <p><a href="/auth/signin">Go back to sign in</a></p>
+      <p><Link href="/auth/signin">Go back to sign in</Link></p>
     </div>
   );
 }

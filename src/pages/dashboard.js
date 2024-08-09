@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import ChartCard from '@/components/ChartCard';
 import {
   Chart as ChartJS,
@@ -11,8 +11,6 @@ import {
 } from 'chart.js';
 import axios from 'axios';
 import Link from 'next/link';
-
-const api = process.env.API_URL;
 
 ChartJS.register(
   BarElement,
@@ -29,27 +27,6 @@ const Dashboard = () => {
   const [typeData, setTypeData] = useState({ labels: [], datasets: [] });
   const [durationData, setDurationData] = useState({ labels: [], datasets: [] });
   const [range, setRange] = useState('7d'); // Default to 7 days
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`${api}/${range ? `?range=${range}` : ''}`);
-        const processedViewData = processViewData(response.data);
-        const processedLocationData = processLocationData(response.data);
-        const processedTypeData = processTypeData(response.data);
-        const processedDurationData = processDurationData(response.data);
-
-        setViewData(processedViewData);
-        setLocationData(processedLocationData);
-        setTypeData(processedTypeData);
-        setDurationData(processedDurationData);
-      } catch (error) {
-        console.error('Error fetching data', error);
-      }
-    };
-
-    fetchData();
-  }, [range]);
 
   const processViewData = (events) => {
     const views = events.reduce((acc, event) => {
@@ -101,7 +78,7 @@ const Dashboard = () => {
     };
   };
 
-  const processTypeData = (events) => {
+  const processTypeData = useCallback((events) => {
     const types = events.reduce((acc, event) => {
       const type = event.type;
       acc[type] = (acc[type] || 0) + 1;
@@ -123,7 +100,7 @@ const Dashboard = () => {
         },
       ],
     };
-  };
+  }, []);
 
   const processDurationData = (events) => {
     const durations = events.reduce((acc, event) => {
@@ -149,8 +126,36 @@ const Dashboard = () => {
     };
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`https://nekonode-nekostats-api.sziwyz.easypanel.host/api/events/${range ? `?range=${range}` : ''}`);
+        const processedViewData = processViewData(response.data);
+        const processedLocationData = processLocationData(response.data);
+        const processedTypeData = processTypeData(response.data);
+        const processedDurationData = processDurationData(response.data);
+
+        setViewData(processedViewData);
+        setLocationData(processedLocationData);
+        setTypeData(processedTypeData);
+        setDurationData(processedDurationData);
+      } catch (error) {
+        console.error('Error fetching data', error);
+      }
+    };
+
+    fetchData();
+  }, [range, processTypeData]);
+
   const handleRangeChange = (event) => {
     setRange(event.target.value);
+  };
+
+  const getRandomColor = () => {
+    const colors = [
+      '#FF5733', '#33FF57', '#3357FF', '#F1C40F', '#8E44AD', '#1ABC9C', '#E74C3C', '#2ECC71', '#3498DB'
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
   };
 
   const viewChartOptions = {
@@ -221,24 +226,17 @@ const Dashboard = () => {
     },
   };
 
-  const getRandomColor = () => {
-    const colors = [
-      '#FF5733', '#33FF57', '#3357FF', '#F1C40F', '#8E44AD', '#1ABC9C', '#E74C3C', '#2ECC71', '#3498DB'
-    ];
-    return colors[Math.floor(Math.random() * colors.length)];
-  };
-
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-8">
       <div className="container mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-extrabold mb-4">Analytics Dashboard</h1>
-          <p className="text-lg text-gray-300">Track and analyze your website's performance with NekoNode Analytics.</p>
+          <p className="text-lg text-gray-300">Track and analyze your website&apos;s performance with NekoNode Analytics.</p>
         </div>
 
         <div className="flex justify-center mb-12">
           <Link href="/" className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition">
-             Go to Home
+            Go to Home
           </Link>
         </div>
 
